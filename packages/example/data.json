@@ -1,0 +1,12 @@
+{
+  "posts": [
+    {
+      "title": "First",
+      "text": "This is the first post."
+    },
+    {
+      "title": "Second",
+      "text": "And this is the second post."
+    }
+  ]
+}

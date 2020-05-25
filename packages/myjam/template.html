@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title><%= htmlWebpackPlugin.options.title || 'myjam app'%></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <% if (htmlWebpackPlugin.files.favicon) { %>
+    <link rel="shortcut icon" href="<%= htmlWebpackPlugin.files.favicon%>">
+  <% } %>
+
+  <% for (var css in htmlWebpackPlugin.files.css) { %>
+    <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
+  <% } %>
+
+  <% if (htmlWebpackPlugin.options.dev) { %>
+    <link href="tailwind.css" rel="stylesheet">
+  <% } %>
+</head>
+
+<body>
+  <div id="__myjam"><%= htmlWebpackPlugin.options.renderedHtml %></div>
+
+  <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
+    <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
+  <% } %>
+
+  <% if (htmlWebpackPlugin.options.myjamData) { %>
+    <script id="__myjam_data__" type="application/json">
+      <%= htmlWebpackPlugin.options.myjamData %>
+    </script>
+  <% } %>
+  
+  <% if (htmlWebpackPlugin.options.dev) { %>
+    <script>
+      const events = new EventSource("http://localhost:<%= htmlWebpackPlugin.options.port %>/__myjam_dev__");
+      events.onmessage = (event) => {
+        if (event.data === "reload") {
+          window.location.reload();
+        }
+      };
+    </script>
+  <% } %>
+</body>
+
+</html>
