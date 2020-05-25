@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+import path from "path";
 import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
@@ -36,7 +37,12 @@ export default function getWebpackConfig({
       rules: [
         {
           test: /\.(ts|js)x?$/,
-          exclude: /node_modules/,
+          exclude: (filePath) => {
+            return (
+              filePath.includes("node_modules") &&
+              !filePath.includes(path.join(__dirname, ".."))
+            );
+          },
           use: {
             loader: "babel-loader",
             options: getBabelConfig({
