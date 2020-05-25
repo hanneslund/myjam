@@ -6,6 +6,31 @@ Experimental framework for building web interfaces (Wannabe React & Next.js).
 
 Chekout the [example](packages/example/).
 
+### Install
+
+```console
+yarn add myjam
+```
+
+### Add scripts
+
+```json
+{
+  "scripts": {
+    "dev": "myjam dev",
+    "build": "myjam build"
+  }
+}
+```
+
+### Add entry file (src/index.tsx)
+
+```tsx
+export default function App() {
+  return <h1>myjam!</h1>;
+}
+```
+
 ### **dev** command
 
 ```console
