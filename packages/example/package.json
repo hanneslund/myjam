@@ -1,12 +1,12 @@
 {
   "name": "myjam-example",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "scripts": {
     "dev": "myjam dev",
     "build": "myjam build"
   },
   "dependencies": {
-    "myjam": "0.1.0"
+    "myjam": "^0.1.1"
   }
 }
