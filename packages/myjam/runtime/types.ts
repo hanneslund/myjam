@@ -8,6 +8,10 @@ export type State = {
 
 export type SideEffectFunction = (() => () => void) | (() => void);
 
+export type RefObj<T> = {
+  current: T;
+};
+
 export type ComponentNode = {
   type: "ComponentNode";
   component: JSXComponent;
@@ -16,8 +20,9 @@ export type ComponentNode = {
   children: TreeNode[];
   onMount?: SideEffectFunction[];
   onDismount?: (() => void)[];
-  state?: State[];
   stateChanged?: boolean;
+  state?: State[];
+  refs?: RefObj<any>[];
 };
 
 export type FragmentNode = {

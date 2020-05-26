@@ -4,7 +4,7 @@ Experimental framework for building web interfaces (Wannabe React & Next.js).
 
 ## Getting started
 
-Chekout the [example](packages/example/).
+Checkout the [example](packages/example/).
 
 ### Install
 
@@ -53,7 +53,7 @@ $ myjam build
 
 ### **getProps** function
 
-Only runs at built time, returned value is sent to the entry point component.
+Only runs at build time, returned value is sent to the entry point component.
 
 ```typescript
 export const getProps: GetPropsFunction<Props> = async (
@@ -80,9 +80,7 @@ Tailwind works out of the box.
 ### hooks.. kinda
 
 ```typescript
-import { useState, useEffect } from "myjam";
+import { useState, useEffect, useRef } from "myjam";
 ```
 
-> only useState & useEffect
->
 > useEffect only supports onMount and onDismount at the moment.

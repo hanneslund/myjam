@@ -1,6 +1,12 @@
 import type { JSXProps, JSXComponent } from "../jsx-runtime";
 import type { TreeNode, RootNode } from "./types";
-import { getClasses, getStyles, isNotChildren, createTree } from "./shared";
+import {
+  getClasses,
+  getStyles,
+  isNotChildren,
+  createTree,
+  isRef,
+} from "./shared";
 
 // github.com/preactjs/preact-render-to-string/blob/master/src/index.js#L9
 const VOID_ELEMENTS = /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/;
@@ -29,6 +35,11 @@ function renderTreeToString(node: TreeNode | RootNode): string {
 
   if (node.tag === "textarea") {
     const { value, ...rest } = node.props;
+    if ("children" in rest) {
+      throw new Error(
+        "Use the value prop instead of setting children in <textarea>"
+      );
+    }
     return `<textarea${renderPropsToString(rest)}>${value}</textarea>`;
   }
 
@@ -39,7 +50,7 @@ function renderTreeToString(node: TreeNode | RootNode): string {
 
 function renderPropsToString(props: JSXProps) {
   return Object.entries<any>(props).reduce((acc, [name, val]) => {
-    if (isNotChildren(name) && !name.startsWith("on")) {
+    if (!isRef(name) && isNotChildren(name) && !name.startsWith("on")) {
       if (typeof val === "boolean") {
         return val ? `${acc} ${name}` : acc;
       }

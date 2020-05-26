@@ -1,5 +1,5 @@
 import "./styles.css";
-import { GetPropsFunction, useState } from "myjam";
+import { GetPropsFunction, useState, useEffect, useRef } from "myjam";
 
 type Post = {
   title: string;
@@ -11,6 +11,11 @@ type Props = {
 };
 
 export default function App(props: Props) {
+  const titleRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    titleRef.current.focus();
+  });
+
   const [posts, setPosts] = useState(props.posts);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
@@ -28,6 +33,7 @@ export default function App(props: Props) {
       ))}
       <h1>Add post</h1>
       <input
+        ref={titleRef}
         value={title}
         class="mt-2 border px-4 py-2 rounded-lg"
         placeholder="Title"

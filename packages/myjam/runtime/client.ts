@@ -8,6 +8,7 @@ import type {
 } from "./types";
 import {
   isNullJSXChild,
+  isRef,
   arrayify,
   getClasses,
   getStyles,
@@ -86,14 +87,28 @@ export function runMountSideffects(node: TreeNode) {
   }
 }
 
-function runDismountSideffects(node: TreeNode) {
-  if (node.type === "NullNode" || node.type === "TextNode") return;
-
-  node.children.forEach(runDismountSideffects);
-
+function unmountNode(node: TreeNode, remove = true) {
+  if (node.type === "NullNode") return;
+  if (node.type === "TextNode") {
+    if (remove) {
+      node.dom.remove();
+    }
+    return;
+  }
   if (node.type === "ComponentNode") {
     node.onDismount?.forEach((fn) => fn());
+  } else if (node.type === "DomNode") {
+    if (remove) {
+      node.dom.remove();
+      remove = false;
+    }
+    // Nullify refs pointing to this dom element
+    if (node.props.ref) {
+      node.props.ref.current = null;
+    }
   }
+
+  node.children.forEach((child) => unmountNode(child, remove));
 }
 
 function replaceNode(
@@ -102,13 +117,11 @@ function replaceNode(
   parentChildren: TreeNode[],
   atIndex: number
 ) {
-  runDismountSideffects(current);
-
   const newNode = createTreeNode(nextChild, current.parent, true);
   growTreeFromNodeChildren(newNode, true);
   commitTreeToDom(newNode, findNextSiblingDom(current));
 
-  removeDomElements(current);
+  unmountNode(current);
   parentChildren[atIndex] = newNode;
 }
 
@@ -126,8 +139,7 @@ export function diffAndUpdateChildren(
     if (i === next.length) {
       // Remaining nodes can be removed
       currentChildren.splice(i).forEach((child) => {
-        runDismountSideffects(child);
-        removeDomElements(child);
+        unmountNode(child);
       });
       return;
     }
@@ -217,15 +229,6 @@ export function diffAndUpdateChildren(
   }
 }
 
-function removeDomElements(node: TreeNode) {
-  if (node.type === "NullNode") return;
-  if (node.type === "DomNode" || node.type === "TextNode") {
-    node.dom.remove();
-  } else {
-    node.children.forEach(removeDomElements);
-  }
-}
-
 function setAttribute(dom: any, key: string, val: any) {
   if (key === "class") {
     key = "className";
@@ -259,18 +262,19 @@ function diffAndUpdateProps(
       const eventName = getEventName(key);
       if (eventName) {
         current.dom.addEventListener(eventName, nextProp);
+      } else if (isRef(key)) {
+        nextProp.current = current.dom;
       } else {
         setAttribute(current.dom, key, nextProp);
       }
       currentProps[key] = nextProps[key];
-    } else if (
+    } else if (currentProp !== undefined && nextProp === undefined) {
       // Deleted
-      currentProp !== undefined &&
-      nextProp === undefined
-    ) {
       const eventName = getEventName(key);
       if (eventName) {
         current.dom.removeEventListener(eventName, currentProp);
+      } else if (isRef(key)) {
+        currentProp.current = null;
       } else {
         current.dom.removeAttribute(key);
       }
@@ -290,6 +294,9 @@ function diffAndUpdateProps(
         if (eventName) {
           current.dom.removeEventListener(eventName, currentProp);
           current.dom.addEventListener(eventName, nextProp);
+        } else if (isRef(key)) {
+          currentProp.current = null;
+          nextProp.current = current.dom;
         } else {
           setAttribute(current.dom, key, nextProp);
         }
@@ -335,6 +342,10 @@ export function connectTreeToDom(node: TreeNode | RootNode, dom: any) {
   } else {
     if (node.type === "DomNode") {
       node.dom = dom;
+      // Assign dom element to ref prop
+      if (node.props.ref) {
+        node.props.ref.current = dom;
+      }
 
       // Add event listeners
       Object.entries<any>(node.props).forEach(([prop, val]) => {

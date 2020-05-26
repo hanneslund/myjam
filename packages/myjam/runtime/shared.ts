@@ -25,6 +25,8 @@ export const arrayify = <T>(itemOrArray: T | T[]): T[] => {
 
 export const isNotChildren = (key: string) => key !== "children";
 
+export const isRef = (key: string) => key === "ref";
+
 export const isNullJSXChild = (
   jsx: JSXChild
 ): jsx is null | undefined | boolean => jsx == null || typeof jsx === "boolean";
@@ -70,25 +72,19 @@ const createComponentNode = (
     onMount: [] as SideEffectFunction[], // Removed when effects has been exectued
   } as ComponentNode);
 
-export function createDomNode(
+export const createDomNode = (
   tag: string,
   props: JSXProps,
   parent: NodeParent,
   createDomElement: boolean
-): DomNode {
-  if (tag === "textarea" && "children" in props) {
-    throw new Error(
-      "Use the value prop instead of setting children in <textarea>"
-    );
-  }
-  return {
+): DomNode =>
+  ({
     type: "DomNode",
     tag,
     parent,
     props,
     dom: createDomElement ? document.createElement(tag) : undefined,
-  } as DomNode;
-}
+  } as DomNode);
 
 export const createFragmentNode = (props: JSXProps, parent: NodeParent) =>
   ({

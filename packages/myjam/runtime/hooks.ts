@@ -1,4 +1,4 @@
-import { ComponentNode, SideEffectFunction, State } from "./types";
+import { ComponentNode, SideEffectFunction, State, RefObj } from "./types";
 import { noop, defer } from "./shared";
 
 let diffComponentChildren: (comp: ComponentNode) => void;
@@ -9,6 +9,7 @@ export function setDiffComponentChildren(diff: (comp: ComponentNode) => void) {
 let activeComponent: ComponentNode;
 export function setActiveComponent(component: ComponentNode) {
   useStateCount = 0;
+  useRefCount = 0;
   activeComponent = component;
 }
 
@@ -57,4 +58,21 @@ export function useEffect(effectFunction: SideEffectFunction): void {
     return;
   }
   activeComponent.onMount.push(effectFunction);
+}
+
+let useRefCount = 0;
+export function useRef<T>(initialValue: T): RefObj<T> {
+  if (!activeComponent.refs) {
+    activeComponent.refs = [];
+  }
+
+  let currentRef = activeComponent.refs[useRefCount];
+
+  if (!currentRef) {
+    currentRef = { current: initialValue };
+    activeComponent.refs.push(currentRef);
+  }
+
+  useRefCount++;
+  return currentRef;
 }
