@@ -80,7 +80,7 @@ Tailwind works out of the box.
 ### hooks.. kinda
 
 ```typescript
-import { useState, useEffect, useRef } from "myjam";
+import { useState, useEffect, useRef, useMemo, useCallback } from "myjam";
 ```
 
 > useEffect only supports onMount and onDismount at the moment.

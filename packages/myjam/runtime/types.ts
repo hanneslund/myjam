@@ -12,6 +12,8 @@ export type RefObj<T> = {
   current: T;
 };
 
+export type DependencyList = any[];
+
 export type ComponentNode = {
   type: "ComponentNode";
   component: JSXComponent;
@@ -23,6 +25,7 @@ export type ComponentNode = {
   stateChanged?: boolean;
   state?: State[];
   refs?: RefObj<any>[];
+  memoized?: [any, DependencyList][];
 };
 
 export type FragmentNode = {

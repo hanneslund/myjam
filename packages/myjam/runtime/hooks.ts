@@ -1,4 +1,10 @@
-import { ComponentNode, SideEffectFunction, State, RefObj } from "./types";
+import {
+  ComponentNode,
+  SideEffectFunction,
+  State,
+  RefObj,
+  DependencyList,
+} from "./types";
 import { noop, defer } from "./shared";
 
 let diffComponentChildren: (comp: ComponentNode) => void;
@@ -10,6 +16,7 @@ let activeComponent: ComponentNode;
 export function setActiveComponent(component: ComponentNode) {
   useStateCount = 0;
   useRefCount = 0;
+  useMemoCount = 0;
   activeComponent = component;
 }
 
@@ -75,4 +82,41 @@ export function useRef<T>(initialValue: T): RefObj<T> {
 
   useRefCount++;
   return currentRef;
+}
+
+let useMemoCount = 0;
+export function useMemo<T>(factory: () => T, deps: DependencyList): T {
+  if (!activeComponent.memoized) {
+    activeComponent.memoized = [];
+  }
+
+  const currentMemoized = activeComponent.memoized[useMemoCount];
+
+  if (!currentMemoized) {
+    const value = factory();
+    const memoized: [any, DependencyList] = [value, deps];
+    activeComponent.memoized.push(memoized);
+
+    useMemoCount++;
+    return value;
+  }
+
+  let currentValue = currentMemoized[0];
+  const currentDeps = currentMemoized[1];
+
+  if (!currentDeps.every((dep, i) => dep === deps[i])) {
+    currentValue = factory();
+    activeComponent.memoized[useMemoCount] = [currentValue, deps] as [
+      any,
+      DependencyList
+    ];
+  }
+
+  useMemoCount++;
+  return currentValue;
+}
+
+export function useCallback(fn: () => void, deps: DependencyList): () => void {
+  const memoedFn = useMemo(() => fn, deps);
+  return memoedFn;
 }
