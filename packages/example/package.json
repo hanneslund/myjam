@@ -1,14 +1,14 @@
 {
   "name": "myjam-example",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "scripts": {
     "dev": "myjam dev",
     "build": "myjam build",
     "type-check": "tsc"
   },
   "dependencies": {
-    "myjam": "^0.3.0"
+    "myjam": "^0.4.0"
   },
   "devDependencies": {
     "typescript": "^3.9.3"
