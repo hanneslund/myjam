@@ -5,7 +5,7 @@ import {
   RefObj,
   DependencyList,
 } from "./types";
-import { noop, defer } from "./shared";
+import { defer } from "./shared";
 
 let diffComponentChildren: (comp: ComponentNode) => void;
 export function setDiffComponentChildren(diff: (comp: ComponentNode) => void) {
@@ -21,11 +21,9 @@ export function setActiveComponent(component: ComponentNode) {
 }
 
 let useStateCount = 0;
-export function useState<T>(
-  initialState: T
-): [T, (newState: T | ((currentState: T) => T)) => void] {
-  if (!diffComponentChildren) return [initialState, noop];
-
+export function useState<S>(
+  initialState: (() => S) | S
+): [S, (newState: S | ((currentState: S) => S)) => void] {
   if (!activeComponent.state) {
     activeComponent.state = [];
   }
@@ -36,7 +34,7 @@ export function useState<T>(
   if (!currentState) {
     const stateItem: State = {
       parent: activeComponent,
-      state: initialState,
+      state: initialState instanceof Function ? initialState() : initialState,
       setState: (newState: any) => {
         if (typeof newState === "function") {
           stateItem.state = newState(stateItem.state);
@@ -57,6 +55,29 @@ export function useState<T>(
 
   useStateCount++;
   return [currentState.state, currentState.setState];
+}
+
+type Reducer<S, A> = (prevState: S, action: A) => S;
+
+export function useReducer<S, A>(
+  reducer: Reducer<S, A>,
+  initialState: S
+): [S, (action: A) => void];
+export function useReducer<S, A, I>(
+  reducer: Reducer<S, A>,
+  initialArg: I,
+  init: (initialArg: I) => S
+): [S, (action: A) => void];
+export function useReducer(reducer: any, initialArg: any, init?: any) {
+  const [reducerState, setReducerState] = useState(() =>
+    init ? init(initialArg) : initialArg
+  );
+
+  const dispatch = (action: any) => {
+    setReducerState(reducer(reducerState, action));
+  };
+
+  return [reducerState, dispatch];
 }
 
 export function useEffect(effectFunction: SideEffectFunction): void {
@@ -116,7 +137,10 @@ export function useMemo<T>(factory: () => T, deps: DependencyList): T {
   return currentValue;
 }
 
-export function useCallback(fn: () => void, deps: DependencyList): () => void {
+export function useCallback<T extends Function>(
+  fn: T,
+  deps: DependencyList
+): T {
   const memoedFn = useMemo(() => fn, deps);
   return memoedFn;
 }

@@ -12,8 +12,6 @@ import type {
 } from "./types";
 import { setActiveComponent } from "./hooks";
 
-export const noop = () => {};
-
 export function defer(fn: () => void) {
   Promise.resolve().then(fn);
 }

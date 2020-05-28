@@ -4,9 +4,13 @@
   "version": "0.3.0",
   "scripts": {
     "dev": "myjam dev",
-    "build": "myjam build"
+    "build": "myjam build",
+    "type-check": "tsc"
   },
   "dependencies": {
     "myjam": "^0.3.0"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.3"
   }
 }
