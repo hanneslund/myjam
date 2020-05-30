@@ -35,7 +35,7 @@ require("@babel/register")({
       );
     },
   ],
-  ...getBabelConfig({ node: true, pagePath }),
+  ...getBabelConfig({ build: true, pagePath }),
   extensions: [".ts", ".tsx", ".js"],
 });
 

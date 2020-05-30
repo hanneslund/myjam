@@ -1,29 +1,31 @@
 import {
   ComponentNode,
-  SideEffectFunction,
+  EffectFunction,
   State,
   RefObj,
   DependencyList,
 } from "./types";
 import { defer } from "./shared";
-
-let diffComponentChildren: (comp: ComponentNode) => void;
-export function setDiffComponentChildren(diff: (comp: ComponentNode) => void) {
-  diffComponentChildren = diff;
-}
+import { diffComponentChildren } from "./client";
 
 let activeComponent: ComponentNode;
 export function setActiveComponent(component: ComponentNode) {
+  activeComponent = component;
   useStateCount = 0;
+  useEffectCount = 0;
   useRefCount = 0;
   useMemoCount = 0;
-  activeComponent = component;
 }
 
 let useStateCount = 0;
 export function useState<S>(
   initialState: (() => S) | S
 ): [S, (newState: S | ((currentState: S) => S)) => void] {
+  if (__BUILD__) {
+    const state =
+      initialState instanceof Function ? initialState() : initialState;
+    return [state, () => {}];
+  }
   if (!activeComponent.state) {
     activeComponent.state = [];
   }
@@ -80,16 +82,54 @@ export function useReducer(reducer: any, initialArg: any, init?: any) {
   return [reducerState, dispatch];
 }
 
-export function useEffect(effectFunction: SideEffectFunction): void {
-  // diffComponentChildren is only set on client
-  if (!diffComponentChildren || !activeComponent.onMount) {
+let useEffectCount = 0;
+export function useEffect(
+  effectFunction: EffectFunction,
+  deps?: DependencyList
+): void {
+  if (__BUILD__) {
     return;
   }
-  activeComponent.onMount.push(effectFunction);
+
+  if (!activeComponent.effects) {
+    activeComponent.effects = [];
+  }
+
+  const currentEffect = activeComponent.effects[useEffectCount];
+
+  if (!currentEffect) {
+    const comp = activeComponent;
+    defer(() => {
+      const cleanupFn = effectFunction();
+      comp.effects?.push([cleanupFn, deps]);
+    });
+  } else {
+    const [cleanupFn, currentDeps] = currentEffect;
+
+    if (
+      !currentDeps ||
+      !deps ||
+      !currentDeps.every((dep, i) => dep === deps[i])
+    ) {
+      defer(() => {
+        if (cleanupFn) cleanupFn();
+        currentEffect[0] = effectFunction();
+        currentEffect[1] = deps;
+      });
+    }
+  }
+
+  useEffectCount++;
 }
 
 let useRefCount = 0;
 export function useRef<T>(initialValue: T): RefObj<T> {
+  if (__BUILD__) {
+    return {
+      current: initialValue,
+    };
+  }
+
   if (!activeComponent.refs) {
     activeComponent.refs = [];
   }
@@ -107,6 +147,10 @@ export function useRef<T>(initialValue: T): RefObj<T> {
 
 let useMemoCount = 0;
 export function useMemo<T>(factory: () => T, deps: DependencyList): T {
+  if (__BUILD__) {
+    return factory();
+  }
+
   if (!activeComponent.memoized) {
     activeComponent.memoized = [];
   }

@@ -1,5 +1,6 @@
 type BabelConfigOptions = {
-  node: boolean;
+  dev?: boolean;
+  build: boolean;
   pagePath: string;
 };
 

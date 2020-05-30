@@ -77,7 +77,7 @@ Tailwind works out of the box.
 <div class={{ "border shadow": !disabled, hidden: disabled }}>Hello world!</p>
 ```
 
-### hooks.. kinda
+### Hooks
 
 ```typescript
 import {
@@ -89,5 +89,3 @@ import {
   useCallback,
 } from "myjam";
 ```
-
-> useEffect only supports onMount and onDismount at the moment.
