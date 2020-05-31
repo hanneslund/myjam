@@ -8,7 +8,6 @@ import type {
   RootNode,
   TextNode,
   FragmentNode,
-  SideEffectFunction,
 } from "./types";
 import { setActiveComponent } from "./hooks";
 
@@ -67,7 +66,6 @@ const createComponentNode = (
     component,
     parent,
     props,
-    onMount: [] as SideEffectFunction[], // Removed when effects has been exectued
   } as ComponentNode);
 
 export const createDomNode = (

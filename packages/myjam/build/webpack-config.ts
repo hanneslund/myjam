@@ -46,7 +46,8 @@ export default function getWebpackConfig({
           use: {
             loader: "babel-loader",
             options: getBabelConfig({
-              node: false,
+              dev,
+              build: false,
               pagePath,
             }),
           },

@@ -1,13 +1,14 @@
+const envIfStatements = require("./babel-plugins/envIfStatements");
 const myjamInjectPage = require("./babel-plugins/myjamInjectPage");
 const removeAssetImports = require("./babel-plugins/removeAssetImports");
 const removePageExports = require("./babel-plugins/removePageExports");
 
-module.exports = function getBabelConfig({ node, pagePath }) {
+module.exports = function getBabelConfig({ dev, build, pagePath }) {
   return {
     presets: [
       [
         "@babel/preset-env",
-        node
+        build
           ? {
               targets: {
                 node: "current",
@@ -24,9 +25,10 @@ module.exports = function getBabelConfig({ node, pagePath }) {
       "@babel/preset-typescript",
     ],
     plugins: [
+      [envIfStatements, { dev, build }],
       [myjamInjectPage, { pagePath }],
-      node && removeAssetImports,
-      !node && [removePageExports, { pagePath }],
+      build && removeAssetImports,
+      !build && [removePageExports, { pagePath }],
       [
         "@babel/plugin-transform-react-jsx",
         {
@@ -34,7 +36,7 @@ module.exports = function getBabelConfig({ node, pagePath }) {
           importSource: "myjam",
         },
       ],
-      !node && [
+      !build && [
         "@babel/plugin-transform-runtime",
         {
           useESModules: true,

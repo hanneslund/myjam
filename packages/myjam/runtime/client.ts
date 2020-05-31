@@ -17,6 +17,7 @@ import {
   createTreeNode,
   runComponent,
   createNullNode,
+  defer,
 } from "./shared";
 
 export const getEventName = (key: string) =>
@@ -74,19 +75,6 @@ function findParentDom(node: TreeNode): HTMLElement {
   return parent.dom;
 }
 
-export function runMountSideffects(node: TreeNode) {
-  if (node.type === "NullNode" || node.type === "TextNode") return;
-
-  node.children.forEach(runMountSideffects);
-
-  if (node.type === "ComponentNode" && node.onMount) {
-    node.onDismount = node.onMount
-      .map((fn) => fn())
-      .filter(Boolean) as (() => void)[];
-    node.onMount = undefined;
-  }
-}
-
 function unmountNode(node: TreeNode, remove = true) {
   if (node.type === "NullNode") return;
   if (node.type === "TextNode") {
@@ -95,8 +83,10 @@ function unmountNode(node: TreeNode, remove = true) {
     }
     return;
   }
+
   if (node.type === "ComponentNode") {
-    node.onDismount?.forEach((fn) => fn());
+    node.unmounted = true;
+    node.effects?.forEach(([cleanupFn]) => cleanupFn && defer(cleanupFn));
   } else if (node.type === "DomNode") {
     if (remove) {
       node.dom.remove();
@@ -372,10 +362,18 @@ export function connectTreeToDom(node: TreeNode | RootNode, dom: any) {
 }
 
 export function diffComponentChildren(node: ComponentNode) {
+  if (node.unmounted) {
+    if (__DEV__) {
+      const name = node.component.name;
+      console.error(
+        `State changed in an unmounted component ${name ? `(${name})` : ""}.`
+      );
+    }
+    return;
+  }
   // Will only diff once  even if setstate was called several times
   if (!node.stateChanged) return;
 
   node.stateChanged = false;
   diffAndUpdateChildren(node, runComponent(node));
-  runMountSideffects(node);
 }

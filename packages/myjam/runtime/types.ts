@@ -6,7 +6,7 @@ export type State = {
   setState: (newState: any) => void;
 };
 
-export type SideEffectFunction = (() => () => void) | (() => void);
+export type EffectFunction = () => void | (() => void | undefined);
 
 export type RefObj<T> = {
   current: T;
@@ -20,10 +20,11 @@ export type ComponentNode = {
   props: JSXProps;
   parent: NodeParent;
   children: TreeNode[];
-  onMount?: SideEffectFunction[];
-  onDismount?: (() => void)[];
-  stateChanged?: boolean;
+  unmounted?: boolean;
+
   state?: State[];
+  stateChanged?: boolean;
+  effects?: [(() => void) | void, DependencyList | undefined][];
   refs?: RefObj<any>[];
   memoized?: [any, DependencyList][];
 };
