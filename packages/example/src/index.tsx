@@ -14,7 +14,7 @@ export default function App(props: Props) {
   const titleRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     if (titleRef.current) titleRef.current.focus();
-  });
+  }, []);
 
   const [posts, setPosts] = useState(props.posts);
   const [title, setTitle] = useState("");
@@ -37,7 +37,7 @@ export default function App(props: Props) {
         value={title}
         class="mt-2 border px-4 py-2 rounded-lg"
         placeholder="Title"
-        onInput={({ target: { value } }: any) => {
+        onInput={({ currentTarget: { value } }) => {
           setTitle(value);
         }}
       />
@@ -45,7 +45,7 @@ export default function App(props: Props) {
         class="mt-2 block border px-4 py-2 rounded-lg"
         placeholder="Text"
         value={text}
-        onInput={({ target: { value } }: any) => {
+        onInput={({ currentTarget: { value } }) => {
           setText(value);
         }}
       />

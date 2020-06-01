@@ -18,7 +18,8 @@ yarn add myjam
 {
   "scripts": {
     "dev": "myjam dev",
-    "build": "myjam build"
+    "build": "myjam build",
+    "type-check": "myjam type-check"
   }
 }
 ```

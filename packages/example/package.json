@@ -5,12 +5,9 @@
   "scripts": {
     "dev": "myjam dev",
     "build": "myjam build",
-    "type-check": "tsc"
+    "type-check": "myjam type-check"
   },
   "dependencies": {
     "myjam": "^0.4.1"
-  },
-  "devDependencies": {
-    "typescript": "^3.9.3"
   }
 }
