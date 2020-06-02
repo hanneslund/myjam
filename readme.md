@@ -34,6 +34,8 @@ export default function App() {
 
 ### **dev** command
 
+Starts a dev server that rebuilds the project on changes.
+
 ```console
 $ myjam dev
 ⏳ Starting dev server
@@ -48,6 +50,15 @@ Exports the site as pre-rendered static files.
 $ myjam build
 🛠️ Building
 🎉 Build successful!
+```
+
+### **type-check command**
+
+Type checks the project with tsc.
+
+```console
+$ myjam type-check
+✨  Done in 3.51s.
 ```
 
 ## Features

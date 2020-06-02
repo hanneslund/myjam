@@ -45,30 +45,27 @@ if (command === "type-check") {
   if (status !== 0) {
     process.exit(status);
   }
-  process.exit(0);
-}
+} else {
+  require("@babel/register")({
+    ignore: [
+      (filePath) => {
+        return (
+          filePath.includes("node_modules") &&
+          !filePath.includes(path.join(__dirname, ".."))
+        );
+      },
+    ],
+    ...getBabelConfig({ build: true, pagePath }),
+    extensions: [".ts", ".tsx", ".js"],
+  });
 
-require("@babel/register")({
-  ignore: [
-    (filePath) => {
-      return (
-        filePath.includes("node_modules") &&
-        !filePath.includes(path.join(__dirname, ".."))
-      );
-    },
-  ],
-  ...getBabelConfig({ build: true, pagePath }),
-  extensions: [".ts", ".tsx", ".js"],
-});
+  if (command === "build") {
+    process.env.NODE_ENV = "production";
+    require("../commands/build").default(pagePath);
+  }
 
-if (command === "build") {
-  process.env.NODE_ENV = "production";
-  require("../commands/build").default(pagePath);
-  process.exit(0);
-}
-
-if (command === "dev") {
-  process.env.NODE_ENV = "development";
-  require("../commands/dev").default(pagePath);
-  process.exit(0);
+  if (command === "dev") {
+    process.env.NODE_ENV = "development";
+    require("../commands/dev").default(pagePath);
+  }
 }
